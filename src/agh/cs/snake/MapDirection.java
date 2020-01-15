@@ -3,9 +3,19 @@ package agh.cs.snake;
 public enum MapDirection
 {
     NORTH,
-    WEST,
+    EAST,
     SOUTH,
-    EAST;
+    WEST;
+    public MapDirection previous ()
+    {
+        switch (this)
+        {
+            case NORTH: return WEST;
+            case EAST: return NORTH;
+            case SOUTH: return EAST;
+            default: return SOUTH;
+        }
+    }
     public Vector2d toUnitVector()
     {
         switch (this)

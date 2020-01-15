@@ -18,7 +18,9 @@ class Game
         long height = (long) jo.get("height");
 
         EventQueue.invokeLater(() -> {
-            Frame ex = new Frame((int)width,(int)height);
+            //Frame ex = new Frame((int)width,(int)height);
+            //ex.setVisible(true);
+            StartingScreen ex = new StartingScreen((int)width,(int)height);
             ex.setVisible(true);
         });
     }

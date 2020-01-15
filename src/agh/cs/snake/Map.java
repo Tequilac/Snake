@@ -34,7 +34,7 @@ public class Map
     }
     void addStones()
     {
-        int n=this.width*this.height/100;
+        int n=this.width*this.height/50;
         for(int i=0; i<n; i++)
         {
             int x=(int)(Math.random()*width);
@@ -79,7 +79,7 @@ public class Map
             if(snake.components.get(i).equals(snake.components.get(0)))
                 return true;
         }
-        int n=this.width*this.height/100;
+        int n=this.stones.size();
         for(int i=0; i<n; i++)
         {
             if(stones.get(i).position.equals(snake.components.get(0)))

@@ -12,7 +12,7 @@ import java.awt.image.BufferedImage;
 public class Panel extends JPanel implements ActionListener
 {
     private Map map;
-    private Adapter key= new Adapter();
+    private Adapter key;
     private Image apple;
     private Image stone;
     private Image head;
@@ -26,6 +26,7 @@ public class Panel extends JPanel implements ActionListener
     private boolean inGame=true;
     Panel(int width, int height)
     {
+        key = new Adapter();
         addKeyListener(key);
         setBackground(Color.black);
         setFocusable(true);
@@ -86,24 +87,23 @@ public class Panel extends JPanel implements ActionListener
         if(inGame)
         {
             super.paintComponent(g);
-            g.drawImage(apple,this.map.apple.position.getX()*20, this.map.apple.position.getY()*20,this);
-
+            draw(g, apple, this.map.apple.position);
 
             for(Stone stones : this.map.stones)
             {
-                g.drawImage(stone,stones.position.getX()*20, stones.position.getY()*20,this);
+                draw(g, stone, stones.position);
             }
 
-
+            Vector2d headPosition = this.map.snake.components.get(0);
             switch (this.map.snake.mapDirs.get(0))
             {
-                case NORTH: g.drawImage(head,this.map.snake.components.get(0).getX()*20, this.map.snake.components.get(0).getY()*20,this);
+                case NORTH: draw(g, head, headPosition);
                     break;
-                case EAST: g.drawImage(headRot[0],this.map.snake.components.get(0).getX()*20, this.map.snake.components.get(0).getY()*20,this);
+                case EAST: draw(g, headRot[0], headPosition);
                     break;
-                case SOUTH: g.drawImage(headRot[1],this.map.snake.components.get(0).getX()*20, this.map.snake.components.get(0).getY()*20,this);
+                case SOUTH: draw(g, headRot[1], headPosition);
                     break;
-                case WEST: g.drawImage(headRot[2],this.map.snake.components.get(0).getX()*20, this.map.snake.components.get(0).getY()*20,this);
+                case WEST: draw(g, headRot[2], headPosition);
             }
 
 
@@ -112,25 +112,55 @@ public class Panel extends JPanel implements ActionListener
             {
                 if(!this.map.snake.mapDirs.get(i).equals(this.map.snake.mapDirs.get(i-1)))
                 {
-                    g.drawImage(bodyTwist,this.map.snake.components.get(i).getX()*20, this.map.snake.components.get(i).getY()*20,this);
+                    if(this.map.snake.mapDirs.get(i).equals(this.map.snake.mapDirs.get(i-1).previous()))
+                    {
+                        switch (this.map.snake.mapDirs.get(i))
+                        {
+                            case NORTH: draw(g,bodyTwist,this.map.snake.components.get(i));
+                                break;
+                            case WEST: draw(g,bodyTwistRot[2],this.map.snake.components.get(i));
+                                break;
+                            case SOUTH: draw(g,bodyTwistRot[1],this.map.snake.components.get(i));
+                                break;
+                            case EAST: draw(g,bodyTwistRot[0],this.map.snake.components.get(i));
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        switch (this.map.snake.mapDirs.get(i))
+                        {
+                            case NORTH: draw(g,bodyTwistRot[0],this.map.snake.components.get(i));
+                                break;
+                            case WEST: draw(g,bodyTwist,this.map.snake.components.get(i));
+                                break;
+                            case SOUTH: draw(g,bodyTwistRot[2],this.map.snake.components.get(i));
+                                break;
+                            case EAST: draw(g,bodyTwistRot[1],this.map.snake.components.get(i));
+                                break;
+                        }
+                    }
                 }
                 else
-                if(this.map.snake.components.get(i).add(new Vector2d(0,-1)).equals(this.map.snake.components.get(i-1)) || this.map.snake.components.get(i).add(new Vector2d(0,1)).equals(this.map.snake.components.get(i-1)))
-                    g.drawImage(body,this.map.snake.components.get(i).getX()*20, this.map.snake.components.get(i).getY()*20,this);
-                else
-                    g.drawImage(bodyRot,this.map.snake.components.get(i).getX()*20, this.map.snake.components.get(i).getY()*20,this);
+                {
+                    if(this.map.snake.mapDirs.get(i).equals(MapDirection.NORTH) || this.map.snake.mapDirs.get(i).equals(MapDirection.SOUTH))
+                        draw(g,body,this.map.snake.components.get(i));
+                    else
+                        draw(g,bodyRot,this.map.snake.components.get(i));
+                }
+
             }
 
 
             switch (this.map.snake.mapDirs.get(length-2))
             {
-                case NORTH: g.drawImage(tail,this.map.snake.components.get(length-1).getX()*20, this.map.snake.components.get(length-1).getY()*20,this);
+                case NORTH: draw(g, tail,this.map.snake.components.get(length-1));
                     break;
-                case EAST: g.drawImage(tailRot[0],this.map.snake.components.get(length-1).getX()*20, this.map.snake.components.get(length-1).getY()*20,this);
+                case EAST: draw(g, tailRot[0],this.map.snake.components.get(length-1));
                     break;
-                case SOUTH: g.drawImage(tailRot[1],this.map.snake.components.get(length-1).getX()*20, this.map.snake.components.get(length-1).getY()*20,this);
+                case SOUTH: draw(g, tailRot[1],this.map.snake.components.get(length-1));
                     break;
-                case WEST: g.drawImage(tailRot[2],this.map.snake.components.get(length-1).getX()*20, this.map.snake.components.get(length-1).getY()*20,this);
+                case WEST: draw(g, tailRot[2],this.map.snake.components.get(length-1));
             }
 
             Toolkit.getDefaultToolkit().sync();
@@ -144,6 +174,11 @@ public class Panel extends JPanel implements ActionListener
             g.setFont(small);
             g.drawString(msg, (getWidth() - metrics.stringWidth(msg)) / 2, getHeight() / 2);
         }
+    }
+
+    public void draw (Graphics graphics, Image image, Vector2d position)
+    {
+        graphics.drawImage(image, position.getX()*20,position.getY()*20, this);
     }
 
     @Override
