@@ -40,7 +40,7 @@ public class Map
             int x=(int)(Math.random()*width);
             int y=(int)(Math.random()*height);
             Vector2d pos=new Vector2d(x,y);
-            while(isOccupied(pos))
+            while(isOccupied(pos) || pos.getX()==width/2)
             {
                 x=(int)(Math.random()*width);
                 y=(int)(Math.random()*height);
@@ -74,7 +74,7 @@ public class Map
     }
     boolean isColliding()
     {
-        for(int i=1; i<snake.components.size(); i++)
+        for(int i=3; i<snake.components.size(); i++)
         {
             if(snake.components.get(i).equals(snake.components.get(0)))
                 return true;

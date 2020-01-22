@@ -8,9 +8,16 @@ import java.awt.event.KeyAdapter;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.FileNotFoundException;
 
 public class Panel extends JPanel implements ActionListener
 {
+    public int width;
+    public int height;
+    public int highScore;
+    public int score;
+    public String name;
+    public String champion;
     private Map map;
     private Adapter key;
     private Image apple;
@@ -19,20 +26,40 @@ public class Panel extends JPanel implements ActionListener
     private Image body;
     private Image tail;
     private Image bodyTwist;
+    private Image sand;
+    private JLabel scoreLabel;
+    private JLabel highScoreLabel;
+    private Color scoreColor = Color.white;
+    private Font font = new Font("Alata", Font.PLAIN, 14);
     private BufferedImage bodyRot;
     private BufferedImage [] bodyTwistRot = new BufferedImage[3];
     private BufferedImage [] tailRot = new BufferedImage[3];
     private BufferedImage [] headRot = new BufferedImage[3];
     private boolean inGame=true;
-    Panel(int width, int height)
+    Panel(int width, int height, int highScore, String name, String champion)
     {
+        this.width=width;
+        this.height=height;
+        this.highScore=highScore;
+        this.name=name;
+        this.champion=champion;
+        this.score=0;
+        this.scoreLabel = new JLabel("Your score: "+this.score);
+        scoreLabel.setForeground(Color.white);
+        scoreLabel.setBounds(0,height*20,width*10, 30);
+        scoreLabel.setFont(font);
+        this.add(scoreLabel);
+        this.highScoreLabel = new JLabel("High score: "+this.highScore);
+        highScoreLabel.setForeground(Color.white);
+        highScoreLabel.setBounds(width*10,height*20,width*10, 30);
+        highScoreLabel.setFont(font);
+        this.add(highScoreLabel);
         key = new Adapter();
         addKeyListener(key);
-        setBackground(Color.black);
+        setBackground(Color.darkGray);
         setFocusable(true);
 
-        setPreferredSize(new Dimension(width*20, height*20));
-
+        setPreferredSize(new Dimension(width*20, height*20+30));
         ImageIcon app=new ImageIcon("src/resources/apple.png");
         apple=app.getImage();
         ImageIcon sto=new ImageIcon("src/resources/stone.png");
@@ -45,6 +72,8 @@ public class Panel extends JPanel implements ActionListener
         tail= tai.getImage();
         ImageIcon twi=new ImageIcon("src/resources/bodytwist.png");
         bodyTwist=twi.getImage();
+        ImageIcon san=new ImageIcon("src/resources/sand.png");
+        sand=san.getImage();
         BufferedImage bodRot = new BufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB);
         Graphics2D bGr = bodRot.createGraphics();
         bGr.drawImage(body, 0, 0, null);
@@ -81,12 +110,45 @@ public class Panel extends JPanel implements ActionListener
         Timer timer=new Timer(200,this);
         timer.start();
     }
+    public void showScore()
+    {
+        this.remove(scoreLabel);
+        this.scoreLabel = new JLabel("Your score: "+this.score);
+        scoreLabel.setForeground(scoreColor);
+        scoreLabel.setBounds(0,height*20,width*10, 30);
+        scoreLabel.setFont(font);
+        this.add(scoreLabel);
+        this.remove(highScoreLabel);
+        this.highScoreLabel = new JLabel("High score: "+this.highScore);
+        highScoreLabel.setForeground(Color.white);
+        highScoreLabel.setBounds(width*10,height*20,width*10, 30);
+        highScoreLabel.setFont(font);
+        this.add(highScoreLabel);
+    }
+    public void addScore(int value)
+    {
+        this.score+=value;
+        if(this.score>this.highScore)
+        {
+            this.highScore=this.score;
+            this.scoreColor=Color.green;
+            this.champion=this.name;
+        }
+
+    }
 
     public void paintComponent(Graphics g)
     {
         if(inGame)
         {
             super.paintComponent(g);
+            for(int i=0; i<this.width; i++)
+            {
+                for(int j=0; j<this.height; j++)
+                {
+                    draw(g, sand, new Vector2d(i, j));
+                }
+            }
             draw(g, apple, this.map.apple.position);
 
             for(Stone stones : this.map.stones)
@@ -168,11 +230,18 @@ public class Panel extends JPanel implements ActionListener
         else
         {
             String msg = "Game Over";
+            if(scoreColor==Color.green)
+                msg="Congratulations, "+this.name+". You have beat the high score";
             Font small = new Font("Helvetica", Font.BOLD, 14);
             FontMetrics metrics = getFontMetrics(small);
-            g.setColor(Color.white);
+            g.setColor(Color.black);
             g.setFont(small);
             g.drawString(msg, (getWidth() - metrics.stringWidth(msg)) / 2, getHeight() / 2);
+            try {
+                Parser parser=new Parser(this.highScore, this.champion);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -185,7 +254,11 @@ public class Panel extends JPanel implements ActionListener
     public void actionPerformed(ActionEvent actionEvent)
     {
         if(this.map.isEating())
+        {
             this.map.eat();
+            this.addScore(100000/(this.height*this.width));
+        }
+
 
         if(key.leftDirection)
             map.change(MapDirection.WEST);
@@ -198,7 +271,7 @@ public class Panel extends JPanel implements ActionListener
 
         if(map.isColliding())
             inGame=false;
-
+        showScore();
         repaint();
     }
 }

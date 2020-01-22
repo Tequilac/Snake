@@ -17,10 +17,12 @@ class Game
         long width = (long) jo.get("width");
         long height = (long) jo.get("height");
 
+        Object his = new JSONParser().parse(new FileReader("highScore.json"));
+        JSONObject hs = (JSONObject) his;
+        long highScore = (long) hs.get("highScore");
+        String champion = (String) hs.get("champion");
         EventQueue.invokeLater(() -> {
-            //Frame ex = new Frame((int)width,(int)height);
-            //ex.setVisible(true);
-            StartingScreen ex = new StartingScreen((int)width,(int)height);
+            StartingScreen ex = new StartingScreen((int)width,(int)height,(int)highScore, champion);
             ex.setVisible(true);
         });
     }
